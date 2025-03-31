@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哈尔滨商业大学经济学院面试题抽签</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 30px;
+            font-size: 40px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 20px 30px;
+        }
+
+        .button-container {
+            display: grid;
+            /* 固定每列宽度 */
+            grid-template-columns: repeat(auto-fit, 180px); 
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 800px;
+            margin: 80px auto;
+        }
+
+        .button-container button {
+            padding: 20px 30px;
+            font-size: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .button-container button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* 为特定按钮设置独特样式 */
+        .button-container button.special-button {
+            background-color: #FFA500;
+            color: #333;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-size: 25px;
+            /* 使用 transform 放大按钮 */
+            transform: scale(1.1); 
+            z-index: 1;
+        }
+
+        .button-container button.special-button:hover {
+            background-color: #FF8C00;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>哈尔滨商业大学经济学院面试题抽签</h1>
+    <div class="button-container">
+        <button class="special-button" onclick="window.location.href='lottery_1.html'">理论一组</button>
+        <button onclick="window.location.href='lottery_2.html'">理论二组</button>
+        <button onclick="window.location.href='lottery_3.html'">国民一组</button>
+        <button onclick="window.location.href='lottery_4.html'">产经一组</button>
+        <button onclick="window.location.href='lottery_5.html'">产经二组</button>
+        <button onclick="window.location.href='lottery_6.html'">产经三组</button>
+        <button onclick="window.location.href='lottery_7.html'">国商一组</button>
+        <button onclick="window.location.href='lottery_8.html'">数量一组</button>
+        <button onclick="window.location.href='lottery_9.html'">应统一组</button>
+        <button onclick="window.location.href='lottery_10.html'">应统二组</button>
+        <button onclick="window.location.href='lottery_11.html'">数字一组</button>
+    </div>
+</body>
+
+</html>
+    

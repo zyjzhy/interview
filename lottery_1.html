@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库抽签</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 50px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #lotteryButton.stopping {
+            background-color: red;
+        }
+
+        #result-container {
+            margin-top: 50px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+       .result-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: white;
+            width: 100%;
+            max-width: 810px;
+            text-align: left;
+        }
+
+       .single-result {
+            margin-bottom: 20px;
+        }
+
+        /* 优化详情按钮和删除按钮的大小 */
+       .single-result button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+       .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        /* 加载动画样式，固定位置 */
+       .loading {
+            display: none;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back-button" onclick="window.history.back()">返回</button>
+    <h1>题库抽签</h1>
+    <button id="lotteryButton" onclick="toggleLottery()">抽签</button>
+    <button onclick="confirmClearLocalStorage()">清除记录</button>
+    <button onclick="viewBackupRecords()">查看备份</button>
+    <button onclick="confirmClearBackupRecords()">清空备份</button>
+    <button onclick="restoreFromBackup()">备份恢复</button>
+    <div id="result-container">
+        <div class="result-box"></div>
+    </div>
+    <div class="loading" id="loading"></div>
+    <script>
+        const questionBankId = window.location.pathname.match(/lottery_(\d+)\.html/)[1];
+        const localKey = `lottery_results_${questionBankId}`;
+        const backupKey = `lottery_results_backup_${questionBankId}`;
+
+        const allQuestionBanks = {
+            1: {
+                思政题: [
+                    { id: 1, question: '1.简述习近平新时代中国特色社会主义思想的核心要义' },
+                    { id: 2, question: '2.如何理解社会主义核心价值观的基本内容和重大意义' },
+                    { id: 3, question: '3.请阐述中国共产党的百年奋斗历程和历史经验' },
+                    { id: 4, question: '4.谈谈你对中国特色社会主义文化的理解' },
+                    { id: 5, question: '5.简述马克思主义中国化的两次历史性飞跃' },
+                    { id: 6, question: '6.如何认识中国精神的内涵和价值' },
+                    { id: 7, question: '7.请说明中国特色社会主义制度的显著优势' },
+                    { id: 8, question: '8.阐述个人理想与社会理想的关系' },
+                    { id: 9, question: '9.谈谈你对爱国主义的时代价值的理解' },
+                    { id: 10, question: '10.如何理解全面依法治国的总目标' }
+                ],
+                英语题: [
+                    { id: 1, question: '1.What are the main factors contributing to global warming and how can we address them?' },
+                    { id: 2, question: '2.Describe your favorite season and explain why you like it.' },
+                    { id: 3, question: '3.Discuss the advantages and disadvantages of living in a big city.' },
+                    { id: 4, question: '4.How do you think technology has changed the way we communicate?' },
+                    { id: 5, question: '5.If you could travel back in time, which period would you choose and why?' },
+                    { id: 6, question: '6.What are the qualities of a good leader?' },
+                    { id: 7, question: '7.Explain the importance of education in personal and social development.' },
+                    { id: 8, question: '8.How do you deal with stress in your daily life?' },
+                    { id: 9, question: '9.Describe a book that has had a profound impact on you.' },
+                    { id: 10, question: '10.What are the benefits of learning a foreign language?' },
+                    { id: 11, question: '11.Discuss the role of media in modern society.' },
+                    { id: 12, question: '12.If you had a superpower, what would it be and how would you use it?' },
+                    { id: 13, question: '13.What are the challenges of international trade?' },
+                    { id: 14, question: '14.How can we promote cultural exchange between different countries?' },
+                    { id: 15, question: '15.Describe your ideal job and what skills you need for it.' },
+                    { id: 16, question: '16.What are the effects of social media on our lives?' },
+                    { id: 17, question: '17.Explain the concept of sustainable development.' },
+                    { id: 18, question: '18.How do you think artificial intelligence will change our future?' },
+                    { id: 19, question: '19.Discuss the importance of teamwork in achieving goals.' },
+                    { id: 20, question: '20.What are the differences between traditional and online learning?' }
+                ],
+                专业课题: [
+                    { id: 1, question: '1.以市场营销专业为例，阐述市场细分的方法和作用' },
+                    { id: 2, question: '2.在会计学中，如何进行财务报表分析' },
+                    { id: 3, question: '3.对于计算机科学专业，简述算法复杂度的概念和意义' },
+                    { id: 4, question: '4.在经济学领域，解释通货膨胀的成因和影响' },
+                    { id: 5, question: '5.以管理学为例，说明决策的过程和方法' },
+                    { id: 6, question: '6.在法学专业中，谈谈刑法的基本原则' },
+                    { id: 7, question: '7.对于土木工程专业，简述建筑结构设计的要点' },
+                    { id: 8, question: '8.在医学专业，解释疾病预防的重要性和措施' },
+                    { id: 9, question: '9.以文学专业为例，分析一部经典作品的主题和艺术特色' },
+                    { id: 10, question: '10.在物理学中，阐述量子力学的基本概念' },
+                    { id: 11, question: '11.对于化学专业，说明化学反应速率的影响因素' },
+                    { id: 12, question: '12.在心理学领域，解释认知失调理论' },
+                    { id: 13, question: '13.以生物学专业为例，简述基因工程的应用和前景' },
+                    { id: 14, question: '14.在金融学中，分析利率变动对金融市场的影响' },
+                    { id: 15, question: '15.对于艺术设计专业，谈谈设计思维的培养方法' },
+                    { id: 16, question: '16.在历史学专业，分析历史事件的研究方法' },
+                    { id: 17, question: '17.以体育学专业为例，阐述运动训练的原则和方法' },
+                    { id: 18, question: '18.在地理学中，解释气候变化的原因和后果' },
+                    { id: 19, question: '19.对于哲学专业，谈谈哲学与生活的关系' },
+                    { id: 20, question: '20.在新闻学专业，说明新闻采访的技巧和方法' },
+                    { id: 21, question: '21.以旅游管理专业为例，分析旅游市场的发展趋势' },
+                    { id: 22, question: '22.在数学专业，阐述微积分的基本思想和应用' },
+                    { id: 23, question: '23.对于社会学专业，解释社会分层的原因和影响' },
+                    { id: 24, question: '24.在电子信息工程专业，简述电路设计的基本步骤' },
+                    { id: 25, question: '25.以音乐学专业为例，分析音乐作品的创作风格' },
+                    { id: 26, question: '26.在环境科学专业，说明环境污染的治理方法' },
+                    { id: 27, question: '27.对于统计学专业，阐述抽样调查的原理和方法' },
+                    { id: 28, question: '28.在教育学专业，谈谈教育公平的内涵和实现途径' },
+                    { id: 29, question: '29.以机械工程专业为例，说明机械设计的创新方法' },
+                    { id: 30, question: '30.在通信工程专业，解释通信协议的作用和分类' }
+                ]
+            }
+        };
+
+        let 思政题 = [...allQuestionBanks[questionBankId].思政题];
+        let 英语题 = [...allQuestionBanks[questionBankId].英语题];
+        let 专业课题 = [...allQuestionBanks[questionBankId].专业课题];
+        let lotteryNumber = 0;
+        let allResults = JSON.parse(localStorage.getItem(localKey)) || [];
+        let currentLotteryResult = null;
+        let isLotteryRunning = false;
+        let lotteryInterval;
+
+        // 从本地存储的结果中标记已抽取的题目
+        function markDrawnQuestions() {
+            allResults.forEach(result => {
+                思政题 = 思政题.filter(q => q.id!== result.思政题.id);
+                result.英语题.forEach(englishQ => {
+                    英语题 = 英语题.filter(q => q.id!== englishQ.id);
+                });
+                result.专业课题.forEach(professionalQ => {
+                    专业课题 = 专业课题.filter(q => q.id!== professionalQ.id);
+                });
+            });
+            if (allResults.length > 0) {
+                lotteryNumber = allResults[allResults.length - 1].抽签序号;
+            }
+        }
+
+        function toggleLottery() {
+            if (isLotteryRunning) {
+                stopLottery();
+            } else {
+                if (思政题.length === 0 || 英语题.length < 2 || 专业课题.length < 3) {
+                    alert('题目已抽完，请更换题库。');
+                    return;
+                }
+                isLotteryRunning = true;
+                const lotteryButton = document.getElementById('lotteryButton');
+                lotteryButton.innerText = '停止';
+                lotteryButton.classList.add('stopping');
+                showLoading();
+                lotteryInterval = setInterval(() => {
+                    const 思政题Result = getRandomQuestion(思政题);
+                    const 英语题Results = getRandomQuestions(英语题, 2);
+                    const 专业课题Results = getRandomQuestions(专业课题, 3);
+                    currentLotteryResult = {
+                        抽签序号: lotteryNumber + 1,
+                        思政题: 思政题Result,
+                        英语题: 英语题Results,
+                        专业课题: 专业课题Results
+                    };
+                }, 100);
+            }
+        }
+
+        function stopLottery() {
+            isLotteryRunning = false;
+            const lotteryButton = document.getElementById('lotteryButton');
+            lotteryButton.innerText = '抽签';
+            lotteryButton.classList.remove('stopping');
+            hideLoading();
+            clearInterval(lotteryInterval);
+            if (currentLotteryResult) {
+                lotteryNumber++;
+                allResults.push(currentLotteryResult);
+                saveResultsToLocalStorage();
+                updateAvailableQuestions();
+                currentLotteryResult = null;
+                displayResults();
+            }
+        }
+
+        function displayResults() {
+            const resultContainer = document.querySelector('.result-box');
+            resultContainer.innerHTML = '';
+            allResults.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('single-result');
+                resultDiv.innerHTML = `
+                    <p>抽签序号：${result.抽签序号}，思政题序号：${result.思政题.id}，英语题序号：${result.英语题.map(q => q.id).join(', ')}，专业课题序号：${result.专业课题.map(q => q.id).join(', ')}
+                    <button onclick="showDetails(${result.抽签序号})">详情</button>
+                    <button onclick="confirmDeleteResult(${result.抽签序号})">删除</button></p>
+                `;
+                resultContainer.appendChild(resultDiv);
+            });
+        }
+
+        function showDetails(lotteryNum) {
+            const result = allResults.find(res => res.抽签序号 === lotteryNum);
+            const params = new URLSearchParams();
+            params.append('抽签序号', result.抽签序号);
+            params.append('思政题', JSON.stringify(result.思政题));
+            params.append('英语题', JSON.stringify(result.英语题));
+            params.append('专业课题', JSON.stringify(result.专业课题));
+            window.location.href = `question_details.html?${params.toString()}`;
+        }
+
+        function confirmDeleteResult(lotteryNum) {
+            if (confirm('确定要删除这条抽签记录吗？')) {
+                const index = allResults.findIndex(res => res.抽签序号 === lotteryNum);
+                if (index!== -1) {
+                    const deletedResult = allResults.splice(index, 1)[0];
+                    saveToBackup([deletedResult]);
+                    restoreQuestions(deletedResult);
+                    updateLotteryNumber();
+                    saveResultsToLocalStorage();
+                    displayResults();
+                }
+            }
+        }
+
+        function confirmClearLocalStorage() {
+            if (confirm('确定要清除所有抽签记录吗？')) {
+                saveAllToBackup();
+                localStorage.removeItem(localKey);
+                resetQuestions();
+                lotteryNumber = 0;
+                allResults = [];
+                const resultContainer = document.querySelector('.result-box');
+                resultContainer.innerHTML = '';
+                alert('本地存储记录已清除，可以重新抽签。');
+            }
+        }
+
+        function viewBackupRecords() {
+            const backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            let backupInfo = '备份记录如下：\n';
+            backupResults.forEach((backup, backupIndex) => {
+                backupInfo += `备份记录 ${backupIndex + 1}：\n`;
+                backup.forEach((result, resultIndex) => {
+                    backupInfo += `  记录 ${resultIndex + 1}：抽签序号：${result.抽签序号}，思政题序号：${result.思政题.id}，英语题序号：${result.英语题.map(q => q.id).join(', ')}，专业课题序号：${result.专业课题.map(q => q.id).join(', ')}\n`;
+                });
+            });
+            alert(backupInfo);
+        }
+
+        function confirmClearBackupRecords() {
+            if (confirm('确定要清空所有备份记录吗？')) {
+                localStorage.removeItem(backupKey);
+                alert('备份记录已清空。');
+            }
+        }
+
+        function restoreFromBackup() {
+            const backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            if (backupResults.length === 0) {
+                alert('没有备份记录可供恢复。');
+                return;
+            }
+            const selectedIndex = prompt('请输入要恢复的备份记录编号（从 1 开始）：');
+            const index = parseInt(selectedIndex, 10) - 1;
+            if (isNaN(index) || index < 0 || index >= backupResults.length) {
+                alert('无效的备份记录编号。');
+                return;
+            }
+            const selectedBackup = backupResults[index];
+            allResults = [...selectedBackup, ...allResults];
+            saveResultsToLocalStorage();
+            resetQuestions();
+            if (selectedBackup.length > 0) {
+                lotteryNumber = Math.max(...selectedBackup.map(res => res.抽签序号));
+            }
+            displayResults();
+            alert('已从备份恢复记录。');
+        }
+
+        // 辅助函数
+        function getRandomQuestion(questions) {
+            const index = Math.floor(Math.random() * questions.length);
+            return questions[index];
+        }
+
+        function getRandomQuestions(questions, count) {
+            const availableQuestions = [...questions];
+            const selectedQuestions = [];
+            for (let i = 0; i < count; i++) {
+                const index = Math.floor(Math.random() * availableQuestions.length);
+                selectedQuestions.push(availableQuestions[index]);
+                availableQuestions.splice(index, 1);
+            }
+            return selectedQuestions;
+        }
+
+        function saveResultsToLocalStorage() {
+            localStorage.setItem(localKey, JSON.stringify(allResults));
+        }
+
+        function updateAvailableQuestions() {
+            思政题 = 思政题.filter(q => q.id!== currentLotteryResult.思政题.id);
+            currentLotteryResult.英语题.forEach(englishQ => {
+                英语题 = 英语题.filter(q => q.id!== englishQ.id);
+            });
+            currentLotteryResult.专业课题.forEach(professionalQ => {
+                专业课题 = 专业课题.filter(q => q.id!== professionalQ.id);
+            });
+        }
+
+        function saveToBackup(results) {
+            let backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            backupResults.push(results);
+            localStorage.setItem(backupKey, JSON.stringify(backupResults));
+        }
+
+        function restoreQuestions(result) {
+            思政题.push(result.思政题);
+            result.英语题.forEach(englishQ => {
+                英语题.push(englishQ);
+            });
+            result.专业课题.forEach(professionalQ => {
+                专业课题.push(professionalQ);
+            });
+        }
+
+        function updateLotteryNumber() {
+            if (allResults.length > 0) {
+                lotteryNumber = Math.max(...allResults.map(res => res.抽签序号));
+            } else {
+                lotteryNumber = 0;
+            }
+        }
+
+        function saveAllToBackup() {
+            let backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            backupResults.push(allResults);
+            localStorage.setItem(backupKey, JSON.stringify(backupResults));
+        }
+
+        function resetQuestions() {
+            思政题 = [...allQuestionBanks[questionBankId].思政题];
+            英语题 = [...allQuestionBanks[questionBankId].英语题];
+            专业课题 = [...allQuestionBanks[questionBankId].专业课题];
+        }
+
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
+        }
+
+        // 页面加载时加载本地存储的结果并标记已抽取的题目
+        window.onload = function () {
+            markDrawnQuestions();
+            displayResults();
+        };
+    </script>
+</body>
+
+</html>    
