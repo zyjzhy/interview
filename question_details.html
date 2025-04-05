@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题目详情</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #2196f3;
+            text-align: center;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0;
+        }
+
+        h2 {
+            color: #03a9f4;
+            text-align: left;
+            font-size: 25px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #03a9f4;
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 5px;
+            font-size: 22px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .question-container {
+            width: auto;
+            min-width: 800px;
+            max-width: 1000px;
+            height: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 20px;
+            font-size: 20px;
+            background-color: #03a9f4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background-color: #0288d1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="back-button" onclick="window.history.back()">返回</button>
+    <div class="question-container">
+        <h1>题目详情</h1>
+        <div id="题目内容"></div>
+    </div>
+    <script>
+        // 获取 URL 参数
+        const url参数 = new URLSearchParams(window.location.search);
+        // 获取抽签序号
+        const 抽签序号 = url参数.get('抽签序号');
+        // 获取小组名称
+        const 小组 = url参数.get('小组');
+        // 获取学生序号
+        const 学生序号 = url参数.get('学生序号');
+        // 获取思政题目
+        const 思政题 = JSON.parse(url参数.get('思政题'));
+        // 获取外语题目
+        const 外语题 = JSON.parse(url参数.get('外语题'));
+        // 获取英语题目
+        const 英语题 = JSON.parse(url参数.get('英语题'));
+        // 获取俄语语题目
+        const 俄语题 = JSON.parse(url参数.get('俄语题'));
+        // 获取日语题目
+        const 日语题 = JSON.parse(url参数.get('日语题'));
+        // 获取专业课1题目
+        const 专业课1 = JSON.parse(url参数.get('专业课1'));
+        // 获取专业课2题目
+        const 专业课2 = JSON.parse(url参数.get('专业课2'));
+        // 获取基础知识题目
+        const 基础知识 = JSON.parse(url参数.get('基础知识'));
+        // 获取综合应用题目
+        const 综合应用 = JSON.parse(url参数.get('综合应用'));
+
+        // 获取显示题目内容的元素
+        const 题目内容元素 = document.getElementById('题目内容');
+
+        // 显示抽签序号、小组、学生序号在同一行
+        let infoText = `抽签序号：${抽签序号}`;
+        if (小组) {
+            infoText += `，小组：${小组}`;
+        }
+        if (学生序号) {
+            infoText += `，学生序号：${学生序号}`;
+        }
+        const infoParagraph = document.createElement('p');
+        infoParagraph.textContent = infoText;
+        题目内容元素.appendChild(infoParagraph);
+
+        // 显示思政题
+        if (思政题) {
+            const 思政题标题 = document.createElement('h2');
+            思政题标题.textContent = '思政题';
+            题目内容元素.appendChild(思政题标题);
+            [思政题].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示外语题
+        if (外语题) {
+            const 外语题标题 = document.createElement('h2');
+            外语题标题.textContent = '外语题';
+            题目内容元素.appendChild(外语题标题);
+            [外语题].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示英语题
+        if (英语题) {
+            const 英语题标题 = document.createElement('h2');
+            英语题标题.textContent = '英语题';
+            题目内容元素.appendChild(英语题标题);
+            [英语题].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示俄语题
+        if (俄语题) {
+            const 俄语题标题 = document.createElement('h2');
+            俄语题标题.textContent = '俄语题';
+            题目内容元素.appendChild(俄语题标题);
+            [俄语题].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示日语题
+        if (日语题) {
+            const 日语题标题 = document.createElement('h2');
+            日语题标题.textContent = '日语题';
+            题目内容元素.appendChild(日语题标题);
+            [日语题].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示专业课1
+        if (专业课1) {
+            const 专业课1标题 = document.createElement('h2');
+            专业课1标题.textContent = '专业课1';
+            题目内容元素.appendChild(专业课1标题);
+            [专业课1].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示专业课2
+        if (专业课2) {
+            const 专业课2标题 = document.createElement('h2');
+            专业课2标题.textContent = '专业课2';
+            题目内容元素.appendChild(专业课2标题);
+            [专业课2].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示基础知识
+        if (基础知识) {
+            const 基础知识标题 = document.createElement('h2');
+            基础知识标题.textContent = '基础知识';
+            题目内容元素.appendChild(基础知识标题);
+            [基础知识].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+
+        // 显示综合应用
+        if (综合应用) {
+            const 综合应用标题 = document.createElement('h2');
+            综合应用标题.textContent = '综合应用';
+            题目内容元素.appendChild(综合应用标题);
+            [综合应用].flat().forEach((题) => {
+                const 段落 = document.createElement('p');
+                段落.textContent = `序号：${题.id}，题目：${题.question}`;
+                题目内容元素.appendChild(段落);
+            });
+        }
+    </script>
+</body>
+
+</html>
+    

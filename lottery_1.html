@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>***专业调剂复试</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        html {
+            background: linear-gradient(to bottom, #e0f7fa, #b2ebf2);
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            text-align: center;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            color: #333;
+        }
+
+        h1 {
+            color: #2196f3;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            font-size: 48px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:not(#lotteryButton) {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        button:not(#lotteryButton):hover {
+            background-color: #1976d2;
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #lotteryButton {
+            background-color: #ff9800;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            font-size: 25px;
+            transform: scale(1.2);
+        }
+
+        #lotteryButton.stopping {
+            background-color: red;
+            color: white;
+        }
+
+        #lotteryButton:hover {
+            background-color: #f57c00;
+            transform: scale(1.2) translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #lotteryButton.stopping:hover {
+            background-color: #b12a05;
+            transform: scale(1.2) translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #result-container {
+            margin-top: 20px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+       .result-box {
+            border: 1px solid #ccc;
+            padding: 10px 30px;
+            border-radius: 15px;
+            background-color: white;
+            width: auto;
+            min-width: 800px;
+            max-width: 1000px;
+            text-align: left;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+       .single-result {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .single-result button {
+            padding: 5px 8px;
+            font-size: 16px;
+            margin-left: 15px;
+            margin: 5px;
+        }
+
+       .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+       .loading {
+            display: none;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 45%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+       .backup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+       .backup-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            animation: fadeInUp 0.5s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+       .backup-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 50px;
+            cursor: pointer;
+        }
+
+        pre {
+            display: block;
+            font-family: monospace;
+            unicode-bidi: isolate;
+            white-space: pre;
+            margin: 1em 0px;
+            text-align: left;
+        }
+
+        .prompt {
+            font-size: 20px;
+            line-height: 1;
+            color: #666;
+            text-indent: 0;
+            text-align: center;
+        }
+
+        .highlight {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+       .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+       .language-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+       .language-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+        }
+
+       .language-modal button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>***专业调剂复试</h1>
+    <p class="prompt"><span class="highlight">全程录像，后期将逐一筛查。请务必严守纪律，切勿心存侥幸！违规必查！！！</span></p>
+    <div class="button-container">
+        <button onclick="confirmClearBackupRecords()">清空历史</button>
+        <button onclick="confirmClearLocalStorage()">清除记录</button>
+        <button id="lotteryButton" onclick="handleLotteryButtonClick()">抽取</button>
+        <button onclick="viewBackupRecords()">查看历史</button>
+        <button onclick="restoreFromBackup()">历史恢复</button>
+    </div>
+    <div id="result-container">
+        <div class="result-box" style="text-align: center;">抽签结果</div>
+    </div>
+    <div class="loading" id="loading"></div>
+    <div class="backup-modal" id="backup-modal">
+        <div class="backup-modal-content">
+            <span class="backup-modal-close" onclick="closeBackupModal()">&times;</span>
+            <pre id="backup-info"></pre>
+        </div>
+    </div>
+    <div class="language-modal" id="language-modal">
+        <div class="language-modal-content">
+            <p>请选择外语科目</p>
+            <button onclick="selectLanguage('英语题')">英语</button>
+            <button onclick="selectLanguage('俄语题')">俄语</button>
+            <button onclick="selectLanguage('日语题')">日语</button>
+            <button onclick="closeLanguageModal()">取消</button>
+        </div>
+    </div>
+    <script>
+        const questionBankId = window.location.pathname.match(/lottery_(\d+)\.html/)[1];
+        const groupId = window.location.search.match(/group=(\d+)/)?.[1] || '1';
+        const localKey = `lottery_results_${questionBankId}_group_${groupId}`;
+        const backupKey = `lottery_results_backup_${questionBankId}_group_${groupId}`;
+
+        const allQuestionBanks = {
+            1: {
+                思政题: [
+                    {id: 1, question: '1、思政题1' },
+                    { id: 2, question: '2、思政题2' },
+                    { id: 3, question: '3、思政题3' },
+                    { id: 4, question: '4、思政题4' },
+                    { id: 5, question: '5、思政题5' },
+                    { id: 6, question: '6、思政题6' },
+                    { id: 7, question: '7、思政题7' },
+                    { id: 8, question: '8、思政题8' },
+                    { id: 9, question: '9、思政题9' },
+                    { id: 10, question: '10、思政题10' }
+                    ],
+                英语题: [
+                    { id: 1, question: '1.英语题1' },
+                    { id: 2, question: '2.英语题2' },
+                    { id: 3, question: '3.英语题3' },
+                    { id: 4, question: '4.英语题4' },
+                    { id: 5, question: '5.英语题5' },
+                    { id: 6, question: '6.英语题6' },
+                    { id: 7, question: '7.英语题7' },
+                    { id: 8, question: '8.英语题8' },
+                    { id: 9, question: '9.英语题9' },
+                    { id: 10, question: '10.英语题10' }
+                ],
+                俄语题: [
+                    { id: 1, question: '1.俄语题1' },
+                    { id: 2, question: '2.俄语题2' },
+                    { id: 3, question: '3.俄语题3' }
+                ],
+                日语题: [
+                    { id: 1, question: '1.日语题1' },
+                    { id: 2, question: '2.日语题2' },
+                    { id: 3, question: '3.日语题3' }
+                ],
+                专业课1: [
+                    { id: 1, question: '1. 专业课1题1' },
+                    { id: 2, question: '2. 专业课1题2' },
+                    { id: 3, question: '3. 专业课1题3' },
+                    { id: 4, question: '4. 专业课1题4' },
+                    { id: 5, question: '5. 专业课1题5' },
+                    { id: 6, question: '6. 专业课1题6' },
+                    { id: 7, question: '7. 专业课1题7' },
+                    { id: 8, question: '8. 专业课1题8' },
+                    { id: 9, question: '9. 什专业课1题9' },
+                    { id: 10, question: '10. 专业课1题10' }
+                ],
+                专业课2: [
+                    { id: 1, question: '1.专业课2题1' },
+                    { id: 2, question: '2.专业课2题2' },
+                    { id: 3, question: '3.专业课2题3' },
+                    { id: 4, question: '4.专业课2题4' },
+                    { id: 5, question: '5.专业课2题5' },
+                    { id: 6, question: '6.专业课2题6' },
+                    { id: 7, question: '7.专业课2题7' },
+                    { id: 8, question: '8.专业课2题8' },
+                    { id: 9, question: '9.专业课2题9' },
+                    { id: 10, question: '10.专业课2题10' }
+                ]
+            }
+        };
+
+        let lotteryNumber = 0;
+        let allResults = JSON.parse(localStorage.getItem(localKey)) || [];
+        let currentLotteryResult = null;
+        let isLotteryRunning = false;
+        let lotteryInterval;
+        // 记录各题型已抽取的序号
+        let 思政题已抽取序号 = [];
+        let 英语题已抽取序号 = [];
+        let 专业课1已抽取序号 = [];
+        let 专业课2已抽取序号 = [];
+        // 记录最近3次抽取的所有题目的组合
+        let recentThreeCombinations = [];
+        // 记录最近3次抽取的思政题和英语题的组合
+        let recentThree思政英语Combinations = [];
+        // 记录最近3次抽取的两门专业课的组合
+        let recentThree专业课Combinations = [];
+        // 记录四类题的所有组合
+        let 四类题组合 = [];
+        // 记录思政英语的所有组合
+        let 思政英语组合 = [];
+        // 记录两门专业课的所有组合
+        let 专业课组合 = [];
+
+        function openLanguageModal() {
+            const languageModal = document.getElementById('language-modal');
+            languageModal.style.display = 'flex';
+        }
+
+        function closeLanguageModal() {
+            const languageModal = document.getElementById('language-modal');
+            languageModal.style.display = 'none';
+        }
+
+        function handleLotteryButtonClick() {
+            if (isLotteryRunning) {
+                stopLottery();
+            } else {
+                openLanguageModal();
+            }
+        }
+
+        function selectLanguage(language) {
+            closeLanguageModal();
+            isLotteryRunning = true;
+            const lotteryButton = document.getElementById('lotteryButton');
+            lotteryButton.innerText = '停止';
+            lotteryButton.classList.add('stopping');
+            showLoading();
+            lotteryInterval = setInterval(() => {
+                let 思政题Result;
+                let 外语题Result;
+                let 专业课1Result;
+                let 专业课2Result;
+                let validCombination = false;
+                let attempts = 0;
+                const maxAttempts = 100; // 最大尝试次数
+
+                while (!validCombination && attempts < maxAttempts) {
+                    思政题Result = getQuestionWithNoRepeat(allQuestionBanks[questionBankId].思政题, 思政题已抽取序号);
+                    if (language === '英语题') {
+                        外语题Result = getQuestionWithNoRepeat(allQuestionBanks[questionBankId][language], 英语题已抽取序号);
+                    } else {
+                        外语题Result = getRandomQuestion(allQuestionBanks[questionBankId][language]);
+                    }
+                    专业课1Result = getQuestionWithNoRepeat(allQuestionBanks[questionBankId].专业课1, 专业课1已抽取序号);
+                    专业课2Result = getQuestionWithNoRepeat(allQuestionBanks[questionBankId].专业课2, 专业课2已抽取序号);
+
+                    const 思政英语组合Key = `${思政题Result.id}-${外语题Result.id}`;
+                    const 专业课组合Key = `${专业课1Result.id}-${专业课2Result.id}`;
+                    const 四类题组合Key = `${思政题Result.id}-${外语题Result.id}-${专业课1Result.id}-${专业课2Result.id}`;
+
+                    const isRecentRepeat = recentThreeCombinations.includes(四类题组合Key);
+                    const is思政英语Repeat = recentThree思政英语Combinations.includes(思政英语组合Key);
+                    const is专业课Repeat = recentThree专业课Combinations.includes(专业课组合Key);
+                    const is四类题Complete = 四类题组合.length === allQuestionBanks[questionBankId].思政题.length * (language === '英语题'? allQuestionBanks[questionBankId].英语题.length : 1) * allQuestionBanks[questionBankId].专业课1.length * allQuestionBanks[questionBankId].专业课2.length;
+                    const is思政英语Complete = language === '英语题' && 思政英语组合.length === allQuestionBanks[questionBankId].思政题.length * allQuestionBanks[questionBankId].英语题.length;
+                    const is专业课Complete = 专业课组合.length === allQuestionBanks[questionBankId].专业课1.length * allQuestionBanks[questionBankId].专业课2.length;
+
+                    if (!isRecentRepeat &&
+                        (!is思政英语Repeat || is思政英语Complete) &&
+                        (!is专业课Repeat || is专业课Complete) &&
+                        (!四类题组合.includes(四类题组合Key) || is四类题Complete)) {
+                        validCombination = true;
+                    }
+                    attempts++;
+                }
+
+                if (!validCombination) {
+                    思政题Result = getRandomQuestion(allQuestionBanks[questionBankId].思政题);
+                    if (language === '英语题') {
+                        外语题Result = getRandomQuestion(allQuestionBanks[questionBankId][language]);
+                    } else {
+                        外语题Result = getRandomQuestion(allQuestionBanks[questionBankId][language]);
+                    }
+                    专业课1Result = getRandomQuestion(allQuestionBanks[questionBankId].专业课1);
+                    专业课2Result = getRandomQuestion(allQuestionBanks[questionBankId].专业课2);
+                }
+
+                currentLotteryResult = {
+                    抽签序号: lotteryNumber + 1,
+                    思政题: 思政题Result,
+                    外语题: 外语题Result,
+                    专业课1: 专业课1Result,
+                    专业课2: 专业课2Result,
+                    外语科目: language,
+                    抽取时间: new Date().toLocaleString()
+                };
+            }, 100);
+        }
+
+        function stopLottery() {
+            isLotteryRunning = false;
+            const lotteryButton = document.getElementById('lotteryButton');
+            lotteryButton.innerText = '抽签';
+            lotteryButton.classList.remove('stopping');
+            hideLoading();
+            clearInterval(lotteryInterval);
+            if (currentLotteryResult) {
+                lotteryNumber++;
+                allResults.push(currentLotteryResult);
+
+                // 更新已抽取的序号
+                思政题已抽取序号.push(currentLotteryResult.思政题.id);
+                if (currentLotteryResult.外语科目 === '英语题') {
+                    英语题已抽取序号.push(currentLotteryResult.外语题.id);
+                }
+                专业课1已抽取序号.push(currentLotteryResult.专业课1.id);
+                专业课2已抽取序号.push(currentLotteryResult.专业课2.id);
+
+                // 更新最近3次抽取的所有题目的组合
+                const 四类题组合Key = `${currentLotteryResult.思政题.id}-${currentLotteryResult.外语题.id}-${currentLotteryResult.专业课1.id}-${currentLotteryResult.专业课2.id}`;
+                recentThreeCombinations.push(四类题组合Key);
+                if (recentThreeCombinations.length > 3) {
+                    recentThreeCombinations.shift();
+                }
+
+                // 更新最近3次抽取的思政题和英语题的组合
+                if (currentLotteryResult.外语科目 === '英语题') {
+                    const 思政英语组合Key = `${currentLotteryResult.思政题.id}-${currentLotteryResult.外语题.id}`;
+                    recentThree思政英语Combinations.push(思政英语组合Key);
+                    if (recentThree思政英语Combinations.length > 3) {
+                        recentThree思政英语Combinations.shift();
+                    }
+                    if (!思政英语组合.includes(思政英语组合Key)) {
+                        思政英语组合.push(思政英语组合Key);
+                    }
+                }
+
+                // 更新最近3次抽取的两门专业课的组合
+                const 专业课组合Key = `${currentLotteryResult.专业课1.id}-${currentLotteryResult.专业课2.id}`;
+                recentThree专业课Combinations.push(专业课组合Key);
+                if (recentThree专业课Combinations.length > 3) {
+                    recentThree专业课Combinations.shift();
+                }
+                if (!专业课组合.includes(专业课组合Key)) {
+                    专业课组合.push(专业课组合Key);
+                }
+
+                // 更新四类题的组合
+                if (!四类题组合.includes(四类题组合Key)) {
+                    四类题组合.push(四类题组合Key);
+                }
+
+                saveResultsToLocalStorage();
+                currentLotteryResult = null;
+                displayResults();
+            }
+        }
+
+        function displayResults() {
+            const resultContainer = document.querySelector('.result-box');
+            resultContainer.innerHTML = '';
+            if (allResults.length === 0) {
+                resultContainer.textContent = '暂无抽签结果';
+            } else {
+                allResults.forEach(result => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.classList.add('single-result');
+                    resultDiv.innerHTML = `
+                        <p style="text-align:left;">抽签序号：${result.抽签序号}，思政题序号：${result.思政题.id}，${result.外语科目}序号：${result.外语题.id}，专业课1序号：${result.专业课1.id}，专业课2序号：${result.专业课2.id}
+                        <button onclick="showDetails(${result.抽签序号})">详情</button>
+                        <button onclick="confirmDeleteResult(${result.抽签序号})">删除</button></p>
+                    `;
+                    resultContainer.appendChild(resultDiv);
+                });
+            }
+        }
+
+        function showDetails(lotteryNum) {
+            const result = allResults.find(res => res.抽签序号 === lotteryNum);
+            const params = new URLSearchParams();
+            params.append('抽签序号', result.抽签序号);
+            params.append('思政题', JSON.stringify(result.思政题));
+            params.append('外语题', JSON.stringify(result.外语题));
+            params.append('专业课1', JSON.stringify(result.专业课1));
+            params.append('专业课2', JSON.stringify(result.专业课2));
+            params.append('外语科目', result.外语科目);
+            params.append('抽取时间', result.抽取时间);
+            window.location.href = `question_details.html?${params.toString()}`;
+        }
+
+        function confirmDeleteResult(lotteryNum) {
+            if (confirm('确定要删除这条抽签记录吗？')) {
+                const index = allResults.findIndex(res => res.抽签序号 === lotteryNum);
+                if (index!== -1) {
+                    const deletedResult = allResults.splice(index, 1)[0];
+                    saveToBackup([deletedResult]);
+                    updateLotteryNumber();
+
+                    // 删除记录时，更新已抽取的序号
+                    const 思政题Index = 思政题已抽取序号.indexOf(deletedResult.思政题.id);
+                    if (思政题Index!== -1) {
+                        思政题已抽取序号.splice(思政题Index, 1);
+                    }
+                    if (deletedResult.外语科目 === '英语题') {
+                        const 英语题Index = 英语题已抽取序号.indexOf(deletedResult.外语题.id);
+                        if (英语题Index!== -1) {
+                            英语题已抽取序号.splice(英语题Index, 1);
+                        }
+                    }
+                    const 专业课1Index = 专业课1已抽取序号.indexOf(deletedResult.专业课1.id);
+                    if (专业课1Index!== -1) {
+                        专业课1已抽取序号.splice(专业课1Index, 1);
+                    }
+                    const 专业课2Index = 专业课2已抽取序号.indexOf(deletedResult.专业课2.id);
+                    if (专业课2Index!== -1) {
+                        专业课2已抽取序号.splice(专业课2Index, 1);
+                    }
+
+                    // 删除记录时，更新最近3次抽取的所有题目的组合
+                    const 四类题组合Key = `${deletedResult.思政题.id}-${deletedResult.外语题.id}-${deletedResult.专业课1.id}-${deletedResult.专业课2.id}`;
+                    const combinationIndex = recentThreeCombinations.indexOf(四类题组合Key);
+                    if (combinationIndex!== -1) {
+                        recentThreeCombinations.splice(combinationIndex, 1);
+                    }
+
+                    // 删除记录时，更新最近3次抽取的思政题和英语题的组合
+                    if (deletedResult.外语科目 === '英语题') {
+                        const 思政英语组合Key = `${deletedResult.思政题.id}-${deletedResult.外语题.id}`;
+                        const 思政英语Index = recentThree思政英语Combinations.indexOf(思政英语组合Key);
+                        if (思政英语Index!== -1) {
+                            recentThree思政英语Combinations.splice(思政英语Index, 1);
+                        }
+                        const 思政英语CombinationIndex = 思政英语组合.indexOf(思政英语组合Key);
+                        if (思政英语CombinationIndex!== -1) {
+                            思政英语组合.splice(思政英语CombinationIndex, 1);
+                        }
+                    }
+
+                    // 删除记录时，更新最近3次抽取的两门专业课的组合
+                    const 专业课组合Key = `${deletedResult.专业课1.id}-${deletedResult.专业课2.id}`;
+                    const 专业课Index = recentThree专业课Combinations.indexOf(专业课组合Key);
+                    if (专业课Index!== -1) {
+                        recentThree专业课Combinations.splice(专业课Index, 1);
+                    }
+                    const 专业课CombinationIndex = 专业课组合.indexOf(专业课组合Key);
+                    if (专业课CombinationIndex!== -1) {
+                        专业课组合.splice(专业课CombinationIndex, 1);
+                    }
+
+                    // 删除记录时，更新四类题的组合
+                    const 四类题Index = 四类题组合.indexOf(四类题组合Key);
+                    if (四类题Index!== -1) {
+                        四类题组合.splice(四类题Index, 1);
+                    }
+
+                    saveResultsToLocalStorage();
+                    displayResults();
+                }
+            }
+        }
+
+        function confirmClearLocalStorage() {
+            if (confirm('确定要清除所有抽签记录吗？')) {
+                saveAllToBackup();
+                localStorage.removeItem(localKey);
+                lotteryNumber = 0;
+                allResults = [];
+                思政题已抽取序号 = [];
+                英语题已抽取序号 = [];
+                专业课1已抽取序号 = [];
+                专业课2已抽取序号 = [];
+                recentThreeCombinations = [];
+                recentThree思政英语Combinations = [];
+                recentThree专业课Combinations = [];
+                四类题组合 = [];
+                思政英语组合 = [];
+                专业课组合 = [];
+                const resultContainer = document.querySelector('.result-box');
+                resultContainer.innerHTML = '';
+                resultContainer.textContent = '暂无抽签结果';
+                alert('存储记录已清除，可以重新抽签。');
+            }
+        }
+
+        function viewBackupRecords() {
+            const backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            let backupInfo = '历史记录如下：\n';
+            backupResults.forEach((backup, backupIndex) => {
+                backupInfo += `历史记录 ${backupIndex + 1}：\n`;
+                backup.forEach((result, resultIndex) => {
+                    backupInfo += `  记录 ${resultIndex + 1}：抽签序号：${result.抽签序号}，思政题序号：${result.思政题.id}，${result.外语科目}序号：${result.外语题.id}，专业课1序号：${result.专业课1.id}，专业课2序号：${result.专业课2.id}，抽取时间：${result.抽取时间}\n`;
+                });
+            });
+            const backupInfoElement = document.getElementById('backup-info');
+            backupInfoElement.textContent = backupInfo;
+            const backupModal = document.getElementById('backup-modal');
+            backupModal.style.display = 'flex';
+        }
+
+        function confirmClearBackupRecords() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                localStorage.removeItem(backupKey);
+                alert('历史记录已清空。');
+            }
+        }
+
+        function restoreFromBackup() {
+            const backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            if (backupResults.length === 0) {
+                alert('没有历史记录可供恢复。');
+                return;
+            }
+            const selectedIndex = prompt('请输入要恢复的历史记录编号（从 1 开始）：');
+            const index = parseInt(selectedIndex, 10) - 1;
+            if (isNaN(index) || index < 0 || index >= backupResults.length) {
+                alert('无效的历史记录编号。');
+                return;
+            }
+            const selectedBackup = backupResults[index];
+            allResults = [...selectedBackup, ...allResults];
+            saveResultsToLocalStorage();
+            if (selectedBackup.length > 0) {
+                lotteryNumber = Math.max(...selectedBackup.map(res => res.抽签序号));
+            }
+
+            // 恢复历史记录时，更新已抽取的序号
+            selectedBackup.forEach(result => {
+                思政题已抽取序号.push(result.思政题.id);
+                if (result.外语科目 === '英语题') {
+                    英语题已抽取序号.push(result.外语题.id);
+                }
+                专业课1已抽取序号.push(result.专业课1.id);
+                专业课2已抽取序号.push(result.专业课2.id);
+
+                // 恢复历史记录时，更新最近3次抽取的所有题目的组合
+                const 四类题组合Key = `${result.思政题.id}-${result.外语题.id}-${result.专业课1.id}-${result.专业课2.id}`;
+                recentThreeCombinations.push(四类题组合Key);
+                if (recentThreeCombinations.length > 3) {
+                    recentThreeCombinations.shift();
+                }
+
+                // 恢复历史记录时，更新最近3次抽取的思政题和英语题的组合
+                if (result.外语科目 === '英语题') {
+                    const 思政英语组合Key = `${result.思政题.id}-${result.外语题.id}`;
+                    recentThree思政英语Combinations.push(思政英语组合Key);
+                    if (recentThree思政英语Combinations.length > 3) {
+                        recentThree思政英语Combinations.shift();
+                    }
+                    if (!思政英语组合.includes(思政英语组合Key)) {
+                        思政英语组合.push(思政英语组合Key);
+                    }
+                }
+
+                // 恢复历史记录时，更新最近3次抽取的两门专业课的组合
+                const 专业课组合Key = `${result.专业课1.id}-${result.专业课2.id}`;
+                recentThree专业课Combinations.push(专业课组合Key);
+                if (recentThree专业课Combinations.length > 3) {
+                    recentThree专业课Combinations.shift();
+                }
+                if (!专业课组合.includes(专业课组合Key)) {
+                    专业课组合.push(专业课组合Key);
+                }
+
+                // 恢复历史记录时，更新四类题的组合
+                if (!四类题组合.includes(四类题组合Key)) {
+                    四类题组合.push(四类题组合Key);
+                }
+            });
+            displayResults();
+            alert('已从历史恢复记录。');
+        }
+
+        // 辅助函数
+        function getRandomQuestion(questions) {
+            const index = Math.floor(Math.random() * questions.length);
+            return questions[index];
+        }
+
+        function getQuestionWithNoRepeat(questions, usedNumbers) {
+            const unusedQuestions = questions.filter(question =>!usedNumbers.includes(question.id));
+            if (unusedQuestions.length > 0) {
+                const index = Math.floor(Math.random() * unusedQuestions.length);
+                return unusedQuestions[index];
+            } else {
+                return getRandomQuestion(questions);
+            }
+        }
+
+        function saveResultsToLocalStorage() {
+            localStorage.setItem(localKey, JSON.stringify(allResults));
+        }
+
+        function saveToBackup(results) {
+            let backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            backupResults.push(results);
+            localStorage.setItem(backupKey, JSON.stringify(backupResults));
+        }
+
+        function updateLotteryNumber() {
+            if (allResults.length > 0) {
+                lotteryNumber = Math.max(...allResults.map(res => res.抽签序号));
+            } else {
+                lotteryNumber = 0;
+            }
+        }
+
+        function saveAllToBackup() {
+            let backupResults = JSON.parse(localStorage.getItem(backupKey)) || [];
+            backupResults.push(allResults);
+            localStorage.setItem(backupKey, JSON.stringify(backupResults));
+        }
+
+        function showLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
+        }
+
+        function closeBackupModal() {
+            const backupModal = document.getElementById('backup-modal');
+            backupModal.style.display = 'none';
+        }
+
+        // 页面加载时加载本地存储的结果
+        window.onload = function () {
+            if (allResults.length > 0) {
+                lotteryNumber = allResults[allResults.length - 1].抽签序号;
+            }
+            // 初始化已抽取的序号
+            allResults.forEach(result => {
+                思政题已抽取序号.push(result.思政题.id);
+                if (result.外语科目 === '英语题') {
+                    英语题已抽取序号.push(result.外语题.id);
+                }
+                专业课1已抽取序号.push(result.专业课1.id);
+                专业课2已抽取序号.push(result.专业课2.id);
+
+                // 初始化最近3次抽取的所有题目的组合
+                const 四类题组合Key = `${result.思政题.id}-${result.外语题.id}-${result.专业课1.id}-${result.专业课2.id}`;
+                recentThreeCombinations.push(四类题组合Key);
+                if (recentThreeCombinations.length > 3) {
+                    recentThreeCombinations.shift();
+                }
+
+                // 初始化最近3次抽取的思政题和英语题的组合
+                if (result.外语科目 === '英语题') {
+                    const 思政英语组合Key = `${result.思政题.id}-${result.外语题.id}`;
+                    recentThree思政英语Combinations.push(思政英语组合Key);
+                    if (recentThree思政英语Combinations.length > 3) {
+                        recentThree思政英语Combinations.shift();
+                    }
+                    if (!思政英语组合.includes(思政英语组合Key)) {
+                        思政英语组合.push(思政英语组合Key);
+                    }
+                }
+
+                // 初始化最近3次抽取的两门专业课的组合
+                const 专业课组合Key = `${result.专业课1.id}-${result.专业课2.id}`;
+                recentThree专业课Combinations.push(专业课组合Key);
+                if (recentThree专业课Combinations.length > 3) {
+                    recentThree专业课Combinations.shift();
+                }
+                if (!专业课组合.includes(专业课组合Key)) {
+                    专业课组合.push(专业课组合Key);
+                }
+
+                // 初始化四类题的组合
+                if (!四类题组合.includes(四类题组合Key)) {
+                    四类题组合.push(四类题组合Key);
+                }
+            });
+            displayResults();
+        };
+</script>
+</body>
+
+</html>
